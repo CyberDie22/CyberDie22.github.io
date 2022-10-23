@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Minecraft Calculator</title>
+  </head>
+
+  <body>
+    <label for="calculator-mode">Choose a mode:</label>
+    <select name="calculator-mode" id="calculator-mode">
+      <option value="none">--Choose an option--</option>
+      <optgroup label="Skyfactions">
+        <option value="sf-blacksmith">Blacksmith</option>
+      </optgroup>
+    </select>
+
+    <hr>
+
+    <div id="sf-blacksmith-sec" hidden>
+      <label for="sfbs-item-material">Choose a material:</label>
+      <select name="sfbs-item-material" id="sfbs-item-material">
+        <option value="none">--Choose an option--</option>
+        <option value="diamond">Diamond</option>
+        <option value="netherite">Netherite</option>
+      </select>
+
+      <hr>
+
+        <div id="sf-blacksmith-sell" hidden>
+          <div>
+              <label for="sfbs-sell-type">Choose an item type:</label>
+              <select value="sfbs-sell-type" id="sfbs-sell-type">
+                <option value="none">--Choose an option--</option>
+                <optgroup label="Armor">
+                    <option value="helmet">Helmet</option>
+                    <option value="chestplate">Chestplate</option>
+                    <option value="leggings">Leggings</option>
+                    <option value="boots">Boots</option>
+                </optgroup>
+                <optgroup label="Weapons">
+                    <option value="sword">Sword</option>
+                </optgroup>
+                <optgroup label="Tools">
+                    <option value="pickaxe">Pickaxe</option>
+                    <option value="axe">Axe</option>
+                    <option value="shovel">Shovel</option>
+                    <option value="hoe">Hoe</option>
+                </optgroup>
+              </select>
+          </div>
+
+          <div>
+              <label for="sfbs-enchanted-with-mending">Is enchanted with Mending:</label>
+              <select value="sfbs-enchanted-with-mending" id="sfbs-enchanted-with-mending">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+          </div>
+
+          <div>
+              <label for="sfbs-enchanted-with-infinity">Is enchanted with Infinity:</label>
+              <select value="sfbs-enchanted-with-infinity" id="sfbs-enchanted-with-infinity">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+          </div>
+
+          <div>
+              <label for="sfbs-t1-enchants">T1 Enchant Count: </label>
+              <input id="sfbs-t1-enchants" type="text">
+          </div>
+
+          <div>
+              <label for="sfbs-t2-enchants">T2 Enchant Count: </label>
+              <input id="sfbs-t2-enchants" type="text">
+          </div>
+
+          <div>
+              <label for="sfbs-t3-enchants">T3 Enchant Count: </label>
+              <input id="sfbs-t3-enchants" type="text">
+          </div>
+
+          <div>
+              <label for="sfbs-t4-enchants">T4 Enchant Count: </label>
+              <input id="sfbs-t4-enchants" type="text">
+          </div>
+
+          <div>
+              <label for="sfbs-t5-enchants">T5 Enchant Count: </label>
+              <input id="sfbs-t5-enchants" type="text">
+          </div>
+
+          <div>
+            <p id="sfbs-total">Total: 0 CT</p>
+          </div>
+        </div>
+    </div>
+
+    <script>
+        const calcMode = document.getElementById("calculator-mode")
+        calcMode.onchange = (e) => {
+            console.log("changed selected mode to " + calcMode.value)
+
+            document.getElementById("sf-blacksmith-sec").hidden = true
+            switch (calcMode.value) {
+                case "sf-blacksmith":
+                    document.getElementById("sf-blacksmith-sec").hidden = false
+                    break
+                case "none":
+                    break
+            }
+        }
+
+        const sfbsItemMaterial = document.getElementById("sfbs-item-material")
+        var itemMultiplier = 0
+        sfbsItemMaterial.onchange = (e) => {
+            document.getElementById("sf-blacksmith-sell").hidden = true
+            switch (sfbsItemMaterial.value) {
+                case "none":
+                    itemMultiplier = 0
+                    break
+                case "diamond":
+                    document.getElementById("sf-blacksmith-sell").hidden = false
+                    itemMultiplier = 10
+                    break
+                case "netherite":
+                    document.getElementById("sf-blacksmith-sell").hidden = false
+                    itemMultiplier = 80
+                    break
+            }
+        }
+
+        const sfbsItemType = document.getElementById("sfbs-sell-type")
+        sfbsItemType.onchange = (e) => {
+            sfbsCalculate()
+        }
+
+        const sfbsT1Enchants = document.getElementById("sfbs-t1-enchants")
+        sfbsT1Enchants.onchange = () => { sfbsCalculate() }
+        const sfbsT2Enchants = document.getElementById("sfbs-t2-enchants")
+        sfbsT2Enchants.onchange = () => { sfbsCalculate() }
+        const sfbsT3Enchants = document.getElementById("sfbs-t3-enchants")
+        sfbsT3Enchants.onchange = () => { sfbsCalculate() }
+        const sfbsT4Enchants = document.getElementById("sfbs-t4-enchants")
+        sfbsT4Enchants.onchange = () => { sfbsCalculate() }
+        const sfbsT5Enchants = document.getElementById("sfbs-t5-enchants")
+        sfbsT5Enchants.onchange = () => { sfbsCalculate() }
+        const sfbsEnchantedWithMending = document.getElementById("sfbs-enchanted-with-mending")
+        sfbsEnchantedWithMending.onchange = () => { sfbsCalculate() }
+        const sfbsEnchantedWithInfinity = document.getElementById("sfbs-enchanted-with-infinity")
+        sfbsEnchantedWithInfinity.onchange = () => { sfbsCalculate() }
+
+        const sfbsCalculate = () => {
+            var total = 0
+            switch (sfbsItemType.value) {
+                case "helmet":
+                    total += itemMultiplier * 5
+                    break
+                case "chestplate":
+                    total += itemMultiplier * 8
+                    break
+                case "leggings":
+                    total += itemMultiplier * 7
+                    break
+                case "boots":
+                    total += itemMultiplier * 4
+                    break
+                case "sword":
+                    total += itemMultiplier * 2
+                    break
+                case "pickaxe":
+                    total += itemMultiplier * 3
+                    break
+                case "axe":
+                    total += itemMultiplier * 3
+                    break
+                case "shovel":
+                    total += itemMultiplier * 1
+                    break
+                case "hoe":
+                    total += itemMultiplier * 2
+                    break
+            }
+
+            if (sfbsEnchantedWithMending.value == "yes") total += 300
+            if (sfbsEnchantedWithInfinity.value == "yes") total += 150
+
+            const number = /[0-9]+/
+            if (number.test(sfbsT1Enchants.value)) total += parseInt(sfbsT1Enchants.value) * 60
+            if (number.test(sfbsT2Enchants.value)) total += parseInt(sfbsT2Enchants.value) * 120
+            if (number.test(sfbsT3Enchants.value)) total += parseInt(sfbsT3Enchants.value) * 180
+            if (number.test(sfbsT4Enchants.value)) total += parseInt(sfbsT4Enchants.value) * 240
+            if (number.test(sfbsT5Enchants.value)) total += parseInt(sfbsT5Enchants.value) * 300
+
+            const innerHtml = document.getElementById("sfbs-total").innerHTML
+            var split = innerHtml.split(" ")
+            split[1] = total
+            document.getElementById("sfbs-total").innerHTML = split.join(" ")
+        }
+    </script>
+  </body>
+</html>
