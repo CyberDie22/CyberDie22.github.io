@@ -91,12 +91,36 @@
 
           <div>
             <p id="sfbs-total">Total: 0 CT</p>
+            <p id="sfbs-grand-total">Grand Total: 0 CT</p>
+          </div>
+
+          <div>
+            <button type="button" id="sfbs-back" hidden>Back</button>
+            <button type="button" id="sfbs-next">Next</button>
           </div>
         </div>
     </div>
 
     <script>
+
+        class SFBSItem {
+            constructor(material, type, hasMending, hasInfinity, t1Count, t2Count, t3Count, t4Count, t5Count) {
+                this.material = material
+                this.type = type
+                this.hasMending = hasMending
+                this.hasInfinity = hasInfinity
+                this.t1Count = t1Count
+                this.t2Count = t2Count
+                this.t3Count = t3Count
+                this.t4Count = t4Count
+                this.t5Count = t5Count
+            }
+        }
+
         const calcMode = document.getElementById("calculator-mode")
+        var disableItemUpdates = false
+        var sfbsItems = []
+        var sfbsItemsCursor = 0
         calcMode.onchange = (e) => {
             console.log("changed selected mode to " + calcMode.value)
 
@@ -104,10 +128,39 @@
             switch (calcMode.value) {
                 case "sf-blacksmith":
                     document.getElementById("sf-blacksmith-sec").hidden = false
+                    var newItem = new SFBSItem("none", "none", "no", "no", 0, 0, 0, 0, 0)
+                    sfbsItems.push(newItem)
+                    sfbsItemsCursor = sfbsItems.length - 1
+                    sfbsSet(newItem)
                     break
                 case "none":
                     break
             }
+        }
+
+        const sfbsSet = (sfbsItem) => {
+            disableItemUpdates = true
+            document.getElementById("sfbs-item-material").value = sfbsItem.material
+            document.getElementById("sfbs-item-material").onchange()
+            document.getElementById("sfbs-sell-type").value = sfbsItem.type
+            document.getElementById("sfbs-sell-type").onchange()
+            document.getElementById("sfbs-enchanted-with-mending").value = sfbsItem.hasMending
+            document.getElementById("sfbs-enchanted-with-mending").onchange()
+            document.getElementById("sfbs-enchanted-with-infinity").value = sfbsItem.hasInfinity
+            document.getElementById("sfbs-enchanted-with-infinity").onchange()
+            document.getElementById("sfbs-t1-enchants").value = sfbsItem.t1Count
+            document.getElementById("sfbs-t1-enchants").onchange()
+            document.getElementById("sfbs-t2-enchants").value = sfbsItem.t2Count
+            document.getElementById("sfbs-t2-enchants").onchange()
+            document.getElementById("sfbs-t3-enchants").value = sfbsItem.t3Count
+            document.getElementById("sfbs-t3-enchants").onchange()
+            document.getElementById("sfbs-t4-enchants").value = sfbsItem.t4Count
+            document.getElementById("sfbs-t4-enchants").onchange()
+            document.getElementById("sfbs-t5-enchants").value = sfbsItem.t5Count
+            document.getElementById("sfbs-t5-enchants").onchange()
+            console.log(document.getElementById("sfbs-t1-enchants").value)
+            disableItemUpdates = false
+            sfbsCalculate()
         }
 
         const sfbsItemMaterial = document.getElementById("sfbs-item-material")
@@ -117,16 +170,34 @@
             switch (sfbsItemMaterial.value) {
                 case "none":
                     itemMultiplier = 0
+                    sfbsCalculate()
                     break
                 case "diamond":
                     document.getElementById("sf-blacksmith-sell").hidden = false
                     itemMultiplier = 10
+                    sfbsCalculate()
                     break
                 case "netherite":
                     document.getElementById("sf-blacksmith-sell").hidden = false
                     itemMultiplier = 80
+                    sfbsCalculate()
                     break
             }
+        }
+
+        const sfbsItemUpdate = () => {
+            if (disableItemUpdates) return
+            var item = sfbsItems[sfbsItemsCursor]
+            item.material = document.getElementById("sfbs-item-material").value
+            item.type = document.getElementById("sfbs-sell-type").value
+            item.hasMending = document.getElementById("sfbs-enchanted-with-mending").value
+            item.hasInfinity = document.getElementById("sfbs-enchanted-with-infinity").value
+            item.t1Count = document.getElementById("sfbs-t1-enchants").value
+            item.t2Count = document.getElementById("sfbs-t2-enchants").value
+            item.t3Count = document.getElementById("sfbs-t3-enchants").value
+            item.t4Count = document.getElementById("sfbs-t4-enchants").value
+            item.t5Count = document.getElementById("sfbs-t5-enchants").value
+            sfbsItems[sfbsItemsCursor] = item
         }
 
         const sfbsItemType = document.getElementById("sfbs-sell-type")
@@ -148,10 +219,58 @@
         sfbsEnchantedWithMending.onchange = () => { sfbsCalculate() }
         const sfbsEnchantedWithInfinity = document.getElementById("sfbs-enchanted-with-infinity")
         sfbsEnchantedWithInfinity.onchange = () => { sfbsCalculate() }
+        const sfbsNext = document.getElementById("sfbs-next")
+        sfbsNext.onclick = (e) => {
+            sfbsItemUpdate()
+            if (sfbsItemsCursor < sfbsItems.length - 1) {
+                sfbsItemsCursor += 1
+                sfbsSet(sfbsItems[sfbsItemsCursor])
+            } else {
+                console.log("new item")
+                var newItem = new SFBSItem("none", "none", "no", "no", 0, 0, 0, 0, 0)
+                sfbsItems.push(newItem)
+                sfbsItemsCursor = sfbsItems.length - 1
+                console.log(newItem)
+                console.log(document.getElementById("sfbs-t1-enchants").value)
+                sfbsSet(newItem)
+            }
+            if (sfbsItems.length > 1 && sfbsItemsCursor > 0) {
+                document.getElementById("sfbs-back").hidden = false
+            } else {
+                document.getElementById("sfbs-back").hidden = true
+            }
+        }
+        const sfbsBack =  document.getElementById("sfbs-back")
+        sfbsBack.onclick = (e) => {
+            sfbsItemUpdate()
+            sfbsItemsCursor -= 1
+            sfbsSet(sfbsItems[sfbsItemsCursor])
+        }
 
         const sfbsCalculate = () => {
+            sfbsItemUpdate()
+
+            const total = sfbsItemCalculate(sfbsItems[sfbsItemsCursor])
+
+            var innerHtml = document.getElementById("sfbs-total").innerHTML
+            var split = innerHtml.split(" ")
+            split[1] = total
+            document.getElementById("sfbs-total").innerHTML = split.join(" ")
+
+            var newItems = sfbsItems.map((item) => { return sfbsItemCalculate(item) })
+            var grandTotal = newItems.reduce((a, b) => a + b)
+
+            innerHtml = document.getElementById("sfbs-grand-total").innerHTML
+            split = innerHtml.split(" ")
+            split[2] = grandTotal
+            document.getElementById("sfbs-grand-total").innerHTML = split.join(" ")
+        }
+
+        const sfbsItemCalculate = (item) => {
             var total = 0
-            switch (sfbsItemType.value) {
+            const itemMutliplier = item.material == "netherite" ? 80 : 10
+
+            switch (item.type) {
                 case "helmet":
                     total += itemMultiplier * 5
                     break
@@ -181,20 +300,17 @@
                     break
             }
 
-            if (sfbsEnchantedWithMending.value == "yes") total += 300
-            if (sfbsEnchantedWithInfinity.value == "yes") total += 150
+            if (item.hasMending == "yes") total += 300
+            if (item.hasInfinity == "yes") total += 150
 
             const number = /[0-9]+/
-            if (number.test(sfbsT1Enchants.value)) total += parseInt(sfbsT1Enchants.value) * 60
-            if (number.test(sfbsT2Enchants.value)) total += parseInt(sfbsT2Enchants.value) * 120
-            if (number.test(sfbsT3Enchants.value)) total += parseInt(sfbsT3Enchants.value) * 180
-            if (number.test(sfbsT4Enchants.value)) total += parseInt(sfbsT4Enchants.value) * 240
-            if (number.test(sfbsT5Enchants.value)) total += parseInt(sfbsT5Enchants.value) * 300
+            if (number.test(item.t1Count)) total += parseInt(item.t1Count) * 60
+            if (number.test(item.t2Count)) total += parseInt(item.t2Count) * 120
+            if (number.test(item.t3Count)) total += parseInt(item.t3Count) * 180
+            if (number.test(item.t4Count)) total += parseInt(item.t4Count) * 240
+            if (number.test(item.t5Count)) total += parseInt(item.t5Count) * 300
 
-            const innerHtml = document.getElementById("sfbs-total").innerHTML
-            var split = innerHtml.split(" ")
-            split[1] = total
-            document.getElementById("sfbs-total").innerHTML = split.join(" ")
+            return total
         }
     </script>
   </body>
